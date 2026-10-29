@@ -1,6 +1,11 @@
 include config.mk
 
-CXXFLAGS  += -std=c++17 -O2 $(if $(DEBUG),-g) -Wall -Wextra -Wno-unused-parameter -D_POSIX_C_SOURCE=200809L
+CXXFLAGS  += -std=c++17 -O2 $(if $(DEBUG),-g) -Wall -Wextra -Wno-unused-parameter
+
+# freebsd hides SOCK_CLOEXEC & co when _POSIX_C_SOURCE is set explicitly
+ifneq ($(UNAME_S),FreeBSD)
+CXXFLAGS  += -D_POSIX_C_SOURCE=200809L
+endif
 
 CXXFLAGS  += -fno-omit-frame-pointer -no-pie -ffunction-sections -fdata-sections
 
@@ -40,7 +45,7 @@ all: seraphim seraphimctl
 
 seraphim: $(CORE_OBJ) $(HOST_OBJ) $(AS_OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(CORE_OBJ) $(HOST_OBJ) $(AS_OBJ) $(AS_LIB) \
-		$(DEPS_LIBS) $(WLR_LIBS) -lpthread -lm -Wl,--gc-sections
+		$(DEPS_LIBS) $(WLR_LIBS) -lpthread -lm $(LDFLAGS) -Wl,--gc-sections
 
 seraphimctl: tools/seraphimctl.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -54,13 +59,13 @@ build/main.o: src/main.cpp $(PROTO_HDR) $(PROTO_ENUM) | build
 
 $(PROTO_DIR)/%-protocol.h: protocols/%.xml | $(PROTO_DIR)
 	@command -v $(WL_SCANNER) >/dev/null 2>&1 || { \
-		echo "seraphim: $(WL_SCANNER) not found -- install wayland-dev (Alpine) or libwayland-bin (Debian)"; \
+		echo "seraphim: $(WL_SCANNER) not found -- install wayland-dev (Alpine), libwayland-bin (Debian) or wayland (FreeBSD)"; \
 		exit 1; }
 	$(WL_SCANNER) server-header $< $@
 
 $(PROTO_DIR)/wayland-protocols/%-enum.h: protocols/%.xml | $(PROTO_DIR)/wayland-protocols
 	@command -v $(WL_SCANNER) >/dev/null 2>&1 || { \
-		echo "seraphim: $(WL_SCANNER) not found -- install wayland-dev (Alpine) or libwayland-bin (Debian)"; \
+		echo "seraphim: $(WL_SCANNER) not found -- install wayland-dev (Alpine), libwayland-bin (Debian) or wayland (FreeBSD)"; \
 		exit 1; }
 	$(WL_SCANNER) enum-header $< $@ 2>/dev/null || $(WL_SCANNER) client-header $< $@
 
@@ -88,7 +93,7 @@ deps:
 	@mkdir -p third_party
 	@test -d "$(AS_DIR)" || git clone --depth 1 \
 		https://github.com/codecat/angelscript-mirror "$(AS_DIR)"
-	@$(MAKE) -C "$(AS_DIR)/sdk/angelscript/projects/gnuc"
+	@$(MAKE) -C "$(AS_DIR)/sdk/angelscript/projects/gnuc" CXX="$(CXX)"
 
 install: seraphim seraphimctl
 	mkdir -p $(DESTDIR)$(PREFIX)/bin

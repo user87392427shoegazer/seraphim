@@ -26,6 +26,20 @@ make
 sudo make install
 ```
 
+### freebsd
+
+use gnu make (`gmake`), not the base `make`:
+
+```sh
+pkg install gmake git pkgconf wlroots020 wayland wayland-protocols \
+    libxkbcommon libinput libdrm pixman evdev-proto seatd
+gmake deps
+gmake
+sudo gmake install
+```
+
+you also need `seatd` running (`service seatd enable && service seatd start`), your user in the `video` group, and `drm-kmod` for intel/amd graphics.
+
 to run the tests:
 
 ```sh
