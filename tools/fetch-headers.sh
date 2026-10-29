@@ -1,10 +1,4 @@
 #!/bin/sh
-# Pull the Alpine wlroots 0.20 development headers into /tmp/sysroot, so that
-# src/main.cpp can be syntax-checked here without installing anything
-# system-wide. This is a development aid only; nothing in the build uses it.
-#
-#   sh tools/fetch-headers.sh
-#   g++ -fsyntax-only -I/tmp/sysroot/usr/include/wlroots-0.20 ...
 set -u
 
 BASE=https://dl-cdn.alpinelinux.org/alpine/edge
@@ -26,8 +20,6 @@ fetch_index() {
 apk_url() {
 	name=$1
 	repo=$2
-	# APKINDEX records start with C: then P:, so match the P: line wherever
-	# it is in the stanza rather than assuming it comes first.
 	ver=$(awk -v p="P:$name" 'BEGIN{RS="";FS="\n"} {
 		found = 0
 		for (i = 1; i <= NF; i++)
@@ -51,7 +43,6 @@ get_pkg() {
 	if tar xzf "$file" -C "$dir" data.tar.gz 2>/dev/null; then
 		tar xzf "$dir/data.tar.gz" -C "$ROOT"
 	else
-		# apk v3: the payload is the archive itself, no wrapper tarball
 		tar xzf "$file" -C "$ROOT" --exclude='.SIGN*' --exclude='.PKGINFO' \
 			|| { echo "fail: $name"; return 0; }
 	fi

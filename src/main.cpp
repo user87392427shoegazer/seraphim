@@ -380,12 +380,6 @@ static void run_spawn_command(void)
 	}
 }
 
-/* A subsurface (foot's scrollback indicator, for one) sits at an offset inside
- * its parent that the client chose in surface-local, unzoomed pixels. wlroots
- * keeps that offset on the subsurface's own scene tree, so zooming has to
- * scale it along with the buffers or the subsurface lands outside the shrunken
- * window. The offset is relative to the parent subsurface, so nested ones
- * scale correctly level by level. */
 static void scale_subsurface_offset(struct wlr_scene_buffer *buffer,
 		struct wlr_surface *surface, double scale)
 {
