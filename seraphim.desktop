@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Seraphim
+Comment=Wayland window manager with an infinite canvas, scripted in AngelScript
+Exec=seraphim
+Type=Application
+DesktopNames=seraphim
