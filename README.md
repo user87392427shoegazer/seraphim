@@ -42,6 +42,8 @@ to use a custom angelscript configuration, copy `scripts/seraphim.as` to `~/.con
 
 ## binds
 
+| keys | action |
+| --- | --- |
 | super + left drag | move window |
 | super + right drag | resize window |
 | left drag on empty canvas | pan canvas |
